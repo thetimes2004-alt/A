@@ -1,0 +1,31 @@
+library(Rtsne)
+data_for_tsne <- df_analisi %>% 
+  select(where(is.numeric)) %>% 
+  drop_na() %>% 
+  scale()
+
+View(data_for_tsne)
+
+set.seed(1234)
+data_tsne <-data_for_tsne %>% 
+  Rtsne(dims = 2, perplexity = 30, max_iter = 500)
+dataframe <- data.frame("X1" = data_tsne$Y[,1],
+                        "X2" = data_tsne$Y[,2])
+ggplot(dataframe, aes(x = X1, y = X2)) +
+  geom_point() +
+  theme_bw()
+
+
+n_row <- nrow(data_tsne$Y)
+## Da rivedere non viene benissimo
+library(viridisLite)
+library(viridis)
+
+
+
+ggplot(dataframe, aes(x = X1, y = X2)) +
+  scale_color_brewer() +
+  geom_point() +
+  theme_bw() +
+  theme(legend.position = "none")
+
