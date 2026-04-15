@@ -29,3 +29,43 @@ ggplot(dataframe, aes(x = X1, y = X2)) +
   theme_bw() +
   theme(legend.position = "none")
 
+
+#######################################################################
+
+
+library(tidyverse)
+library(dplyr)
+df <- read.csv("Dati.csv") %>% as_tibble()
+
+
+# Pulizia veloce dei simboli
+df[df == "-" | df == "\\N" | df == ""] <- NA
+
+
+df <- df %>% 
+  mutate(across(where(is.character), ~ na_if(., "-")),
+         across(where(is.character), ~ na_if(., "\\N")),
+         across(where(is.character), ~ na_if(., "")))
+
+## Per ogni genere creo una variabile dummy (0 o 1)
+df_genres <- df %>% 
+  separate_rows(genres, sep = ",") %>% 
+  # da valore 1 ai generi del film e 0 agli altri
+  # toglie gli spazi se ci sono dopo la virgola
+  mutate(value = 1, genres = str_trim(genres)) %>% 
+  pivot_wider(
+    names_from = genres,
+    values_from = value,
+    values_fill = 0,
+    names_prefix = "gen_"
+  )
+
+
+## Creazione di una nuova variabile
+colnames(df_genres)
+df_analisi <- df_genres %>% 
+  mutate(Foreign_gross_ratio = (Worldwide.gross.. - Domestic.gross..) / Worldwide.gross..) %>% 
+  relocate(Foreign_gross_ratio, .before = starts_with("gen_"))
+
+View(df_analisi)
+
